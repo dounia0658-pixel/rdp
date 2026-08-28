@@ -12,7 +12,7 @@ RUN echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | t
 RUN apt update -y && apt install -y firefox
 RUN apt update -y && apt install -y xubuntu-icon-theme
 RUN mkdir -p /usr/share/backgrounds/xfce /usr/share/xfce4/backdrops && \
-    wget --no-check-certificate "https://b.top4top.io/p_3853l6za61.jpg" -O /usr/share/backgrounds/custom.jpg && \
+    wget --no-check-certificate "https://g.top4top.io/p_3892yo4uu1.jpg" -O /usr/share/backgrounds/custom.jpg && \
     find /usr/share/backgrounds/ /usr/share/xfce4/backdrops/ -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.svg" \) -exec cp /usr/share/backgrounds/custom.jpg {} \;
 RUN git clone https://github.com/B00merang-Project/Windows-10.git /usr/share/themes/Windows-10 && \
     git clone https://github.com/B00merang-Project/Windows-10-Icons.git /usr/share/icons/Windows-10 && \
