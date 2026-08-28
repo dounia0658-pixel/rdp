@@ -11,13 +11,17 @@ RUN echo '#!/bin/sh' > /usr/sbin/policy-rc.d && \
     echo 'exit 101' >> /usr/sbin/policy-rc.d && \
     chmod +x /usr/sbin/policy-rc.d
 
-# إنشاء مستخدم غير root
+# إنشاء مستخدم غير root (قبل تثبيت sudo)
 RUN useradd -m -s /bin/bash -u 1000 $USER && \
-    echo "$USER:$USER" | chpasswd && \
+    echo "$USER:$USER" | chpasswd
+
+# تثبيت sudo بشكل منفصل مع تجاهل مشكلة sudoers
+RUN apt update -y && \
+    apt install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" sudo && \
     adduser $USER sudo && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# تثبيت الحزم الأساسية
+# تثبيت باقي الحزم
 RUN apt update -y && \
     apt install -y --no-install-recommends \
     xfce4 \
@@ -25,7 +29,6 @@ RUN apt update -y && \
     tigervnc-standalone-server \
     novnc \
     websockify \
-    sudo \
     xterm \
     vim \
     net-tools \
@@ -71,7 +74,8 @@ RUN git clone https://github.com/B00merang-Project/Windows-10.git /usr/share/the
     echo '</channel>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
 
 # إعداد noVNC للاتصال التلقائي
-RUN echo '<meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=scale">' > /usr/share/novnc/index.html
+RUN echo '<meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=scale">' > /usr/share/novnc/index.html && \
+    echo '<meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=scale">' > /usr/share/novnc/vnc_lite.html
 
 # إعداد VNC
 RUN mkdir -p $HOME/.vnc && \
@@ -84,6 +88,9 @@ RUN echo '#!/bin/bash' > /start.sh && \
     echo 'export HOME=/home/ubuntu' >> /start.sh && \
     echo 'export USER=ubuntu' >> /start.sh && \
     echo 'export DISPLAY=:1' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# تنظيف ملفات VNC القديمة' >> /start.sh && \
+    echo 'rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# بدء VNC server' >> /start.sh && \
     echo 'vncserver :1 -localhost no -SecurityTypes None -geometry $RESOLUTION -depth 24 -fg &' >> /start.sh && \
