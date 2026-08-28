@@ -4,7 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV USER=ubuntu
 ENV HOME=/home/ubuntu
 ENV DISPLAY=:1
-ENV RESOLUTION=1600x900
+ENV RESOLUTION=1920x1080
+
+# منع أي أسئلة تفاعلية من apt
+RUN echo '#!/bin/sh' > /usr/sbin/policy-rc.d && \
+    echo 'exit 101' >> /usr/sbin/policy-rc.d && \
+    chmod +x /usr/sbin/policy-rc.d
 
 # إنشاء مستخدم غير root
 RUN useradd -m -s /bin/bash -u 1000 $USER && \
@@ -13,7 +18,8 @@ RUN useradd -m -s /bin/bash -u 1000 $USER && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # تثبيت الحزم الأساسية
-RUN apt update -y && apt install --no-install-recommends -y \
+RUN apt update -y && \
+    apt install -y --no-install-recommends \
     xfce4 \
     xfce4-goodies \
     tigervnc-standalone-server \
@@ -32,7 +38,8 @@ RUN apt update -y && apt install --no-install-recommends -y \
     x11-xserver-utils \
     x11-apps \
     software-properties-common \
-    && apt clean && rm -rf /var/lib/apt/lists/*
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # تثبيت Firefox من PPA
 RUN add-apt-repository ppa:mozillateam/ppa -y && \
@@ -40,8 +47,10 @@ RUN add-apt-repository ppa:mozillateam/ppa -y && \
     echo 'Pin: release o=LP-PPA-mozillateam' >> /etc/apt/preferences.d/mozilla-firefox && \
     echo 'Pin-Priority: 1001' >> /etc/apt/preferences.d/mozilla-firefox && \
     echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:jammy";' | tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
-    apt update -y && apt install -y firefox xubuntu-icon-theme && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    apt update -y && \
+    apt install -y firefox xubuntu-icon-theme && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # إعداد الخلفية
 RUN mkdir -p /usr/share/backgrounds/xfce /usr/share/xfce4/backdrops && \
@@ -78,10 +87,10 @@ RUN echo '#!/bin/bash' > /start.sh && \
     echo '' >> /start.sh && \
     echo '# بدء VNC server' >> /start.sh && \
     echo 'vncserver :1 -localhost no -SecurityTypes None -geometry $RESOLUTION -depth 24 -fg &' >> /start.sh && \
-    echo 'sleep 3' >> /start.sh && \
+    echo 'sleep 5' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# توليد شهادة SSL' >> /start.sh && \
-    echo 'openssl req -new -x509 -days 365 -nodes -out /tmp/self.pem -keyout /tmp/self.key' >> /start.sh && \
+    echo 'openssl req -new -x509 -days 365 -nodes -out /tmp/self.pem -keyout /tmp/self.key -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"' >> /start.sh && \
     echo 'cat /tmp/self.key /tmp/self.pem > /tmp/cert.pem' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# بدء websockify' >> /start.sh && \
